@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* CSS styling */
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+            /* Position relative for icon placement */
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+        }
+
+        .form-input {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-control {
+            width: calc(100% - 24px);
+            border: 0;
+            padding: 8px;
+            
+            outline: 0;
+        }
+
+        .info-icon {
+            position: relative;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            background-image: url('info.png');
+            background-size: cover;
+        }
+
+        .error-icon {
+            display: none;
+            float: right;
+            color: red;
+            font-weight: bold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 5px;
+            max-width: 400px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn {
+            background-color: rgb(98, 81, 196);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            padding-left: 175px;
+            padding-right: 175px;
+        }
+
+        .btn:hover {
+            background-color: rgb(64, 31, 141);
+        }
+
+        .tooltip {
+            position: absolute;
+            width: 150px;
+            bottom: 20px;
+            left: 20px;
+            background: #333;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Tax Calculator</h2>
+        <form id="taxForm">
+            <div class="form-group">
+                <label for="grossIncome">Gross Annual Income</label>
+                <div class="form-input">
+                <input type="number" id="grossIncome" class="form-control" placeholder="Enter gross annual income">
+                <div class="info-icon" title="Enter your gross annual income without any currency or unit."></div>
+                </div>
+                <div class="error-icon" id="grossIncomeError">!</div>
+            </div>
+            <div class="form-group">
+                <label for="extraIncome">Extra Income</label>
+                
+                <div class="form-input">
+                <input type="number" id="extraIncome" class="form-control" placeholder="Enter extra income">
+                <div class="info-icon" title="Include any extra income apart from your gross annual income."></div>
+                <div class="error-icon" id="extraIncomeError">!</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="deductions">Deductions</label>
+                
+                <div class="form-input">
+                <input type="number" id="deductions" class="form-control" placeholder="Enter deductions">
+                <div class="info-icon"
+                    title="Enter any deductions that you can claim to reduce your taxable income.">
+                </div>
+                <div class="error-icon" id="deductionsError">!</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="age">Age Group</label>
+                
+                <div class="form-input">
+                <select id="age" class="form-control" placeholder="Select age group">
+                    <option value="">Select Age Group</option>
+                    <option value="below_40">&lt; 40</option>
+                    <option value="40_to_60">&ge; 40 &lt; 60</option>
+                    <option value="above_60">&ge; 60</option>
+                </select>
+                <div class="info-icon"
+                    title="Select your age group to determine the applicable tax rate."></div>
+                <div class="error-icon" id="ageError">!</div>
+                </div>
+            </div>
+            <button type="submit" class="btn">Submit</button>
+        </form>
+
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Your overall income will be:</h2>
+            <h3 id="result"></h3>
+            <P> After deduct tax value</P>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('taxForm');
+            const modal = document.getElementById('modal');
+            const resultDisplay = document.getElementById('result');
+
+            function showModal(result) {
+                resultDisplay.innerHTML = `${result}`; 
+                modal.style.display = 'block';
+            }
+
+            // Function to close modal
+            function closeModal() {
+                modal.style.display = 'none';
+            }
+
+            // Event listener for form submission
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                // Get user inputs
+                const grossIncome = parseFloat(document.getElementById('grossIncome').value);
+                const extraIncome = parseFloat(document.getElementById('extraIncome').value);
+                const deductions = parseFloat(document.getElementById('deductions').value);
+                const age = document.getElementById('age').value;
+
+                // Validate inputs
+                let error = false;
+                if (isNaN(grossIncome) || grossIncome < 0) {
+                    document.getElementById('grossIncomeError').style.display = 'block';
+                    error = true;
+                } else {
+                    document.getElementById('grossIncomeError').style.display = 'none';
+                }
+                if (isNaN(extraIncome) || extraIncome < 0) {
+                    document.getElementById('extraIncomeError').style.display = 'block';
+                    error = true;
+                } else {
+                    document.getElementById('extraIncomeError').style.display = 'none';
+                }
+                if (isNaN(deductions) || deductions < 0) {
+                    document.getElementById('deductionsError').style.display = 'block';
+                    error = true;
+                } else {
+                    document.getElementById('deductionsError').style.display = 'none';
+                }
+                if (!age) {
+                    document.getElementById('ageError').style.display = 'block';
+                    error = true;
+                } else {
+                    document.getElementById('ageError').style.display = 'none';
+                }
+
+                if (error) {
+                    return;
+                }
+
+                // Calculate taxable income
+                const totalIncome = grossIncome + extraIncome - deductions;
+                let tax = 0;
+                if (totalIncome > 800000) {
+                    if (age === 'below_40') {
+                        tax = 0.3 * (totalIncome - 800000);
+                    } else if (age === '40_to_60') {
+                        tax = 0.4 * (totalIncome - 800000);
+                    } else {
+                        tax = 0.1 * (totalIncome - 800000);
+                    }
+                }
+
+                // Display result
+                // Display result with line break
+                showModal(`${totalIncome - tax}`);
+
+            });
+
+            // Event listener to close modal
+            modal.addEventListener('click', function (event) {
+                if (event.target === modal || event.target.className === 'close') {
+                    closeModal();
+                }
+            });
+
+            // Close modal when ESC key is pressed
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && modal.style.display === 'block') {
+                    closeModal();
+                }
+            });
+
+            // Tooltips for info icons
+            const infoIcons = document.querySelectorAll('.info-icon');
+            infoIcons.forEach(icon => {
+                icon.addEventListener('mouseover', function () {
+                    const tooltip = document.createElement('div');
+                    tooltip.textContent = icon.getAttribute('title');
+                    tooltip.classList.add('tooltip');
+                    icon.appendChild(tooltip);
+                });
+
+                icon.addEventListener('mouseout', function () {
+                    const tooltip = document.querySelector('.tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

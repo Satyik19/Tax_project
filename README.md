@@ -1,7 +1,4 @@
 
-
----
-
 # Tax Calculator App
 
 This application calculates income tax based on the provided inputs such as age, income, and deductions. Below are the instructions on how to use the app and the features it offers.
@@ -42,10 +39,5 @@ To run this application locally, follow these steps:
 - CSS
 - JavaScript
 
-## Contributors:
-
-- [Your Name](link_to_your_profile) - Role (e.g., Developer, Designer, etc.)
-
 ---
 
-Feel free to customize this README according to your project's specific details and requirements. Let me know if you need any further assistance!

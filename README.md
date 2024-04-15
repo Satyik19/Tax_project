@@ -1,5 +1,6 @@
 
 # Tax Calculator App
+[Live Link](https://satyik19.github.io/Tax_project)
 
 This application calculates income tax based on the provided inputs such as age, income, and deductions. Below are the instructions on how to use the app and the features it offers.
 
